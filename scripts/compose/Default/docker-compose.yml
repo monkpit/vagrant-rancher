@@ -5,25 +5,23 @@ services:
     container_name: consul-server
     network_mode: host
     environment:
-      SERVICE_8080_NAME: 'rancher-server'
-      CATTLE_API_HOST: "http://${SERVER_IP}:${RANCHER_PORT}"
+      CONSUL_LOCAL_CONFIG: "{\"reconnect_timeout\":\"8h\"}"
+      CONSUL_HTTP_ADDR: "0.0.0.0"
+      SERVICE_8500_NAME: 'consul-http'
+      SERVICE_8600_NAME: 'consul-dns'
     command:
-    - "--db-host"
-    - "${SERVER_IP}"
-    - "--db-port"
-    - "3306"
-    - "--db-user"
-    - "${MYSQL_USER}"
-    - "--db-pass"
-    - "${MYSQL_PASSWORD}"
-    - "--db-name"
-    - "${MYSQL_DATABASE}"
-    ports:
-    - $RANCHER_PORT:8080
+    - "agent"
+    - "-server"
+    - "-ui"
+    - "-bind=${SERVER_IP}"
+    - "-bootstrap-expect=1"
+    - "-client=0.0.0.0"
+    - "-datacenter=loc"
+    - "-domain=${CONSUL_DOMAIN}"
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
     restart: unless-stopped
-
---restart=always --name=consul-server -d --net=host -e 'CONSUL_ALLOW_PRIVILEGED_PORTS=' -e "CONSUL_LOCAL_CONFIG={\"reconnect_timeout\":\"8h\"}" consul agent -server -ui -bind=$SERVER_IP -bootstrap-expect=1 -client=0.0.0.0 -datacenter=loc -domain=$CONSUL_DOMAIN
-
   nginx-proxy:
     image: jwilder/nginx-proxy:alpine
     network_mode: bridge
@@ -34,9 +32,12 @@ services:
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.hostname_override: container_name
+    restart: unless-stopped
   registrator:
     image: gliderlabs/registrator:latest
     network_mode: host
+    depends_on:
+    - consul-server
     volumes:
     - /var/run/docker.sock:/tmp/docker.sock:ro
     command:
@@ -44,3 +45,4 @@ services:
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.hostname_override: container_name
+    restart: unless-stopped

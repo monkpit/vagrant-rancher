@@ -74,12 +74,9 @@ wget -q $CONSUL_TEMPLATE_URL/$CONSUL_TEMPLATE_VER/consul-template_${CONSUL_TEMPL
 unzip /tmp/consul-template.zip -d /usr/local/bin/
 
 # Bring up rancher via docker-compose
-cd /vagrant/scripts/compose/Rancher
+cd /vagrant/scripts/compose/rancher
 /usr/local/bin/docker-compose up -d
 cd $CWD
-
-# Launch dnsmasq
-#docker run --name dnsmasq -d -p 53:53/udp -p $DNSMASQ_WEB_PORT:8080 -e "SERVICE_53_NAME=dns" -v $CONTAINER_CONF_DIR/dnsmasq.conf:/etc/dnsmasq.conf --log-opt "max-size=100m" -e "USER=${DNSMASQ_USER}" -e "PASS=${DNSMASQ_PASSWORD}" jpillora/dnsmasq
 
 # Edit host DNS settings
 echo "[main]" > /etc/NetworkManager/conf.d/dns.conf
@@ -88,26 +85,6 @@ systemctl restart NetworkManager.service
 echo "search ${CONSUL_DOMAIN}" > /etc/resolv.conf
 echo "nameserver ${SERVER_IP}" >> /etc/resolv.conf
 
-#Edit host file
-echo "${SERVER_IP}  consul.service.${CONSUL_DOMAIN}" >> /etc/hosts
-
-# Pull & launch registrator
-#sudo docker run --restart=always --name=registrator -d --net=host --volume=/var/run/docker.sock:/tmp/docker.sock gliderlabs/registrator:latest consul://localhost:$CONSUL_WEB_PORT
-
-# Pull & launch nginx-proxy
-#sudo docker run --restart=always --name=nginx-proxy -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro jwilder/nginx-proxy:alpine
-
-# Pull & launch consul container
-#sudo docker run --restart=always --name=consul-server -d --net=host -e 'CONSUL_ALLOW_PRIVILEGED_PORTS=' -e "CONSUL_LOCAL_CONFIG={\"reconnect_timeout\":\"8h\"}" consul agent -server -ui -bind=$SERVER_IP -bootstrap-expect=1 -client=0.0.0.0 -datacenter=loc -domain=$CONSUL_DOMAIN
-#sleep 10 # Give consul dns time to come online
-
-# Configure mysql
-#sudo docker run --restart=always --name=percona-mysql -d --net=host --volume=/var/lib/mysql:/var/lib/mysql -e "MYSQL_ALLOW_EMPTY_PASSWORD=yes" -e "MYSQL_DATABASE=${MYSQL_DATABASE}" -e "MYSQL_PASSWORD=${MYSQL_PASSWORD}" -e "MYSQL_USER=${MYSQL_USER}" percona:$PERCONA_VERSION
-#echo "Sleeping 30 seconds to give percona-mysql time to intialize"
-#sleep 30
-
-# Start rancher server
-#sudo docker run --restart=always --name=rancher-server -d -e "CATTLE_API_HOST=http://${SERVER_IP}:${RANCHER_PORT}" -e "SERVICE_8080_NAME=rancher-server" -p $RANCHER_PORT:8080 rancher/server --db-host $SERVER_IP --db-port 3306 --db-user $MYSQL_USER --db-pass $MYSQL_PASSWORD --db-name $MYSQL_DATABASE
 echo "Sleeping a minute to give rancher-server time to intialize"
 sleep 60
 
@@ -127,11 +104,12 @@ export RANCHER_URL=http://${SERVER_IP}:${RANCHER_PORT}/v1/projects/${PID}/schema
 # Copy scripts
 sudo chmod 777 /usr/local/bin/*
 
-cd /vagrant/scripts/compose/Default
-/usr/local/bin/rancher-compose create
+cd /vagrant/scripts/compose/default
+/usr/local/bin/rancher-compose up -d
 cd $CWD
 
 # Echo instructions
 echo "You should now be able to browse to http://127.0.0.1:${RANCHER_PORT} to use rancher."
 echo "You should now be able to browse to http://127.0.0.1:${CONSUL_WEB_PORT} to use consul."
-echo "Run 'vagrant ssh' to login to your sandbox."
+echo "You should now be able to browse to http://127.0.0.1:${DNSMASQ_WEB_PORT} to use dnsmasq."
+echo "Run 'vagrant ssh' to login to your rancher vm."

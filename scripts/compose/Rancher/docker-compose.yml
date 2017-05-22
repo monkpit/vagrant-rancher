@@ -5,7 +5,8 @@ services:
     container_name: dnsmasq
     network_mode: bridge
     environment:
-      SERVICE_53_NAME: 'dns'
+      SERVICE_53_NAME: 'dnsmasq-dns'
+      SERVICE_8080_NAME: 'dnsmasq-http'
       USER: "${DNSMASQ_USER}"
       PASS: "${DNSMASQ_PASSWORD}"
     volumes:
