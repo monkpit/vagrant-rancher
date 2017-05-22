@@ -1,5 +1,29 @@
 version: '2'
 services:
+  consul-server:
+    image: consul
+    container_name: consul-server
+    network_mode: host
+    environment:
+      SERVICE_8080_NAME: 'rancher-server'
+      CATTLE_API_HOST: "http://${SERVER_IP}:${RANCHER_PORT}"
+    command:
+    - "--db-host"
+    - "${SERVER_IP}"
+    - "--db-port"
+    - "3306"
+    - "--db-user"
+    - "${MYSQL_USER}"
+    - "--db-pass"
+    - "${MYSQL_PASSWORD}"
+    - "--db-name"
+    - "${MYSQL_DATABASE}"
+    ports:
+    - $RANCHER_PORT:8080
+    restart: unless-stopped
+
+--restart=always --name=consul-server -d --net=host -e 'CONSUL_ALLOW_PRIVILEGED_PORTS=' -e "CONSUL_LOCAL_CONFIG={\"reconnect_timeout\":\"8h\"}" consul agent -server -ui -bind=$SERVER_IP -bootstrap-expect=1 -client=0.0.0.0 -datacenter=loc -domain=$CONSUL_DOMAIN
+
   nginx-proxy:
     image: jwilder/nginx-proxy:alpine
     network_mode: bridge
