@@ -1,0 +1,22 @@
+version: '2'
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy:alpine
+    network_mode: bridge
+    volumes:
+    - /var/run/docker.sock:/tmp/docker.sock:ro
+    ports:
+    - 80:80/tcp
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+  registrator:
+    image: gliderlabs/registrator:latest
+    network_mode: host
+    volumes:
+    - /var/run/docker.sock:/tmp/docker.sock:ro
+    command:
+    - "consul://localhost:$CONSUL_WEB_PORT"
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name

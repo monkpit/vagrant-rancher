@@ -1,0 +1,57 @@
+version: '2'
+services:
+  dnsmasq:
+    image: jpillora/dnsmasq
+    container_name: dnsmasq
+    network_mode: bridge
+    environment:
+      SERVICE_53_NAME: 'dns'
+      USER: "${DNSMASQ_USER}"
+      PASS: "${DNSMASQ_PASSWORD}"
+    volumes:
+    - $CONTAINER_CONF_DIR/dnsmasq.conf:/etc/dnsmasq.conf
+    ports:
+    - 53:53/udp
+    - $DNSMASQ_WEB_PORT:8080
+    restart: unless-stopped
+  rancher-mysql:
+    image: percona:$PERCONA_VERSION
+    container_name: rancher-mysql
+    network_mode: bridge
+    depends_on:
+    - dnsmasq
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_USER: "${MYSQL_USER}"
+    volumes:
+    - $CONTAINER_VOL_DIR/rancher-mysql:/var/lib/mysql
+    ports:
+    - 3306:3306
+    restart: unless-stopped
+  rancher-server:
+    image: rancher/server
+    container_name: rancher-server
+    network_mode: bridge
+    depends_on:
+    - dnsmasq
+    - rancher-mysql
+    dns: $SERVER_IP
+    environment:
+      SERVICE_8080_NAME: 'rancher-server'
+      CATTLE_API_HOST: "http://${SERVER_IP}:${RANCHER_PORT}"
+    command:
+    - "--db-host"
+    - "${SERVER_IP}"
+    - "--db-port"
+    - "3306"
+    - "--db-user"
+    - "${MYSQL_USER}"
+    - "--db-pass"
+    - "${MYSQL_PASSWORD}"
+    - "--db-name"
+    - "${MYSQL_DATABASE}"
+    ports:
+    - $RANCHER_PORT:8080
+    restart: unless-stopped
