@@ -9,3 +9,9 @@ services:
   registrator:
     scale: 1
     start_on_create: true
+  vault-server:
+    scale: 1
+    start_on_create: true
+  vault-ui:
+    scale: 1
+    start_on_create: true

@@ -5,7 +5,7 @@ services:
     container_name: consul-server
     network_mode: host
     environment:
-      CONSUL_LOCAL_CONFIG: "{\"reconnect_timeout\":\"8h\"}"
+      CONSUL_LOCAL_CONFIG: "{\"acl_datacenter\":\"${CONSUL_DATACENTER}\",\"acl_default_policy\":\"allow\",\"acl_down_policy\":\"allow\",\"acl_master_token\":\"${CONSUL_ACL_TOKEN}\",\"reconnect_timeout\":\"8h\"}"
       CONSUL_HTTP_ADDR: "0.0.0.0"
       SERVICE_8500_NAME: 'consul-http'
       SERVICE_8600_NAME: 'consul-dns'
@@ -16,33 +16,76 @@ services:
     - "-bind=${SERVER_IP}"
     - "-bootstrap-expect=1"
     - "-client=0.0.0.0"
-    - "-datacenter=loc"
+    - "-datacenter=${CONSUL_DATACENTER}"
     - "-domain=${CONSUL_DOMAIN}"
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.hostname_override: container_name
     restart: unless-stopped
+    volumes:
+    - '/etc/localtime:/etc/localtime:ro'
   nginx-proxy:
     image: jwilder/nginx-proxy:alpine
     network_mode: bridge
-    volumes:
-    - /var/run/docker.sock:/tmp/docker.sock:ro
     ports:
     - 80:80/tcp
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.hostname_override: container_name
     restart: unless-stopped
+    volumes:
+    - '/etc/localtime:/etc/localtime:ro'
+    - '/var/run/docker.sock:/tmp/docker.sock:ro'
   registrator:
     image: gliderlabs/registrator:latest
     network_mode: host
     depends_on:
     - consul-server
-    volumes:
-    - /var/run/docker.sock:/tmp/docker.sock:ro
     command:
     - "consul://localhost:$CONSUL_WEB_PORT"
     labels:
       io.rancher.container.pull_image: always
       io.rancher.container.hostname_override: container_name
     restart: unless-stopped
+    volumes:
+    - '/etc/localtime:/etc/localtime:ro'
+    - '/var/run/docker.sock:/tmp/docker.sock:ro'
+  vault-server:
+    cap_add:
+    - IPC_LOCK
+    image: vault:$VAULT_VERSION
+    environment:
+      SERVICE_8200_NAME: vault
+      SERVICE_8200_CHECK_TCP: 'true'
+      VAULT_ADDR: 'http://127.0.0.1:8200'
+      VAULT_LOCAL_CONFIG: "{\"backend\": {\"consul\": {\"address\": \"consul.service.${CONSUL_DOMAIN}:${CONSUL_WEB_PORT}\",\"check_timeout\": \"5s\", \"path\": \"vault/\", \"scheme\": \"http\"}},\"listener\": {\"tcp\": {\"address\": \"0.0.0.0:8200\", \"tls_disable\": 1}},\"default_lease_ttl\":\"168h\",\"max_lease_ttl\":\"720h\"}"
+    network_mode: bridge
+    ports:
+    - $VAULT_WEB_PORT:8200/tcp
+    command:
+    - server
+    depends_on:
+    - consul-server
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+    restart: unless-stopped
+    volumes:
+    - '/etc/localtime:/etc/localtime:ro'
+    - '/mnt/docker/volumes/vault_logs:/vault/logs'
+    - '/mnt/docker/volumes/vault_file:/vault/file'
+    - '/mnt/docker/volumes/vault_config:/vault/config'
+  vault-ui:
+    image: djenriquez/vault-ui
+    network_mode: bridge
+    environment:
+      VAULT_AUTH_DEFAULT: 'TOKEN'
+      VAULT_URL_DEFAULT: "http://vault.service.${CONSUL_DOMAIN}:${VAULT_WEB_PORT}"
+    ports:
+    - $VAULTUI_WEB_PORT:8000/tcp
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.container.hostname_override: container_name
+    restart: unless-stopped
+    volumes:
+    - '/etc/localtime:/etc/localtime:ro'

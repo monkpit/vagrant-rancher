@@ -12,7 +12,8 @@ services:
     volumes:
     - $CONTAINER_CONF_DIR/dnsmasq.conf:/etc/dnsmasq.conf
     ports:
-    - 53:53/udp
+    - $SERVER_IP:53:53/tcp
+    - $SERVER_IP:53:53/udp
     - $DNSMASQ_WEB_PORT:8080
     restart: unless-stopped
   rancher-mysql:

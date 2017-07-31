@@ -13,6 +13,8 @@ Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", guest: 5380, host: 5380 #dnsmasq
   config.vm.network "forwarded_port", guest: 5601, host: 5601 #kibana
   config.vm.network "forwarded_port", guest: 8080, host: 8080 #squid
+  config.vm.network "forwarded_port", guest: 8100, host: 8100 #vaultui
+  config.vm.network "forwarded_port", guest: 8200, host: 8200 #vault
   config.vm.network "forwarded_port", guest: 8500, host: 8500 #consul
   config.vm.network "forwarded_port", guest: 8888, host: 8888 #rancher
   config.vm.network "forwarded_port", guest: 9090, host: 9090 #prometheus
