@@ -129,6 +129,6 @@ echo "VAULT_ADDR=http://127.0.0.1:${VAULT_WEB_PORT}" >> /etc/environment
 echo "You should now be able to browse to http://127.0.0.1:${RANCHER_PORT} to use rancher."
 echo "You should now be able to browse to http://127.0.0.1:${CONSUL_WEB_PORT} to use consul with token: ${CONSUL_ACL_TOKEN}."
 echo "You should now be able to browse to http://127.0.0.1:${DNSMASQ_WEB_PORT} to use dnsmasq with credentials: ${DNSMASQ_USER}/${DNSMASQ_PASSWORD}."
-echo "You should now be able to browse to http://127.0.0.1:${VAULTUI_WEB_PORT} to use vault-ui with token ${VAULT_ROOT_TOKEN}."
+echo "You should now be able to browse to http://127.0.0.1:${VAULTUI_WEB_PORT} to use vault-ui with token: ${VAULT_ROOT_TOKEN}."
 echo "Run 'vagrant ssh' to login to your rancher vm."
 echo "Run 'config-vault' after reboot to unlock vault."
