@@ -1,7 +1,6 @@
 #!/bin/bash
 
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin/:/usr/local/sbin
-
 set -e
 
 cr=`echo '\n.'`
@@ -36,15 +35,6 @@ vault unseal $(cget unseal-key-2)
 vault unseal $(cget unseal-key-3)
 
 echo "Vault setup complete."
-
-instructions() {
-  cat <<EOF
-The vault unseal keys and root token have been temporarily stored in Consul K/V.
-  /vault/config/root-token
-  /vault/config/unseal-key-{1..5}
-EOF
-
-  exit 1
-}
-
-instructions
+echo "The vault unseal keys and root token have been stored in Consul K/V."
+echo "  /vault/config/root-token"
+echo "  /vault/config/unseal-key-{1..5}"

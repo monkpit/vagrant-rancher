@@ -123,7 +123,7 @@ sleep 60
 wget $VAULT_URL/$VAULT_VERSION/vault_${VAULT_VERSION}_linux_amd64.zip -O /tmp/vault.zip
 unzip /tmp/vault.zip -d /usr/local/bin/
 echo "VAULT_ADDR=http://127.0.0.1:${VAULT_WEB_PORT}" >> /etc/environment
-/usr/local/bin/config-vault
+source /usr/local/bin/config-vault
 
 # Echo instructions
 echo "You should now be able to browse to http://127.0.0.1:${RANCHER_PORT} to use rancher."
