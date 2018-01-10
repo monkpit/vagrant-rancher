@@ -33,7 +33,7 @@ export VAULT_WEB_PORT="8200"
 export VAULTUI_WEB_PORT="8100"
 
 # Run updates & install packages
-sudo yum update -y
+sudo yum update --exclude=kernel* -y
 sudo yum check-update
 sudo yum install bind-utils git mysql mlocate net-tools ntp telnet unzip yum-utils wget -y
 
