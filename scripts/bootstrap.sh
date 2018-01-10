@@ -120,15 +120,15 @@ echo "Sleeping a minute to give default stack time to intialize"
 sleep 60
 
 # Install & configure vault
-wget $VAULT_URL/$VAULT_VERSION/vault_${VAULT_VERSION}_linux_amd64.zip -O /tmp/vault.zip
-unzip /tmp/vault.zip -d /usr/local/bin/
-echo "VAULT_ADDR=http://127.0.0.1:${VAULT_WEB_PORT}" >> /etc/environment
-source /usr/local/bin/config-vault
+# wget $VAULT_URL/$VAULT_VERSION/vault_${VAULT_VERSION}_linux_amd64.zip -O /tmp/vault.zip
+# unzip /tmp/vault.zip -d /usr/local/bin/
+# echo "VAULT_ADDR=http://127.0.0.1:${VAULT_WEB_PORT}" >> /etc/environment
+# source /usr/local/bin/config-vault
 
 # Echo instructions
 echo "You should now be able to browse to http://127.0.0.1:${RANCHER_PORT} to use rancher."
 echo "You should now be able to browse to http://127.0.0.1:${CONSUL_WEB_PORT} to use consul with token: ${CONSUL_ACL_TOKEN}."
 echo "You should now be able to browse to http://127.0.0.1:${DNSMASQ_WEB_PORT} to use dnsmasq with credentials: ${DNSMASQ_USER}/${DNSMASQ_PASSWORD}."
-echo "You should now be able to browse to http://127.0.0.1:${VAULTUI_WEB_PORT} to use vault-ui with token: ${VAULT_ROOT_TOKEN}."
+# echo "You should now be able to browse to http://127.0.0.1:${VAULTUI_WEB_PORT} to use vault-ui with token: ${VAULT_ROOT_TOKEN}."
 echo "Run 'vagrant ssh' to login to your rancher vm."
-echo "Run 'config-vault' after reboot to unlock vault."
+# echo "Run 'config-vault' after reboot to unlock vault."
